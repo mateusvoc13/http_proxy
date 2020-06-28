@@ -1,0 +1,126 @@
+* Purpose
+
+    Here I present you a *HTTP Proxy* created to forward post request while including JWT Web Tokens.
+
+    The specification for the system is described below.
+
+* Specification
+
+Your task is to build an *HTTP proxy* (see definition in [[https://www.ietf.org/rfc/rfc2616.txt][RFC2616]]) that
+takes a *POST request* and appends a JSON Web Token with the following claims:
+
+- ~iat~ - Timestamp of the request as specified by the specification
+- ~jti~ - A cryptographic nonce that should be unique
+- ~payload~ - A json payload of the structure: ~{"user": "username", "date": "todays date"}~
+
+The JWT should be signed with the following hex string secret using the ~HS512~ alogrithm as in the JWT spec:
+
+~a9ddbcaba8c0ac1a0a812dc0c2f08514b23f2db0a68343cb8199ebb38a6d91e4ebfb378e22ad39c2d01 d0b4ec9c34aa91056862ddace3fbbd6852ee60c36acbf~
+
+Append the JWT as the ~x-my-jwt~ header to the upstream post request.
+
+The upstream post endpoint can be any dummy endpoint. For example you can write your own or use something like https://reqres.in or https://postman-echo.com
+
+** Requirements:
+
+- [x] Use Python3.6+
+- [x] Please use whatever libraries are necessary
+- [x] Use Docker and provide a docker-compose.yml file in at least ~version '2'~
+- [x] Provide a ~Makefile~ with following targets:
+    - [x] ~build~ to build the application
+    - [x] ~run~ to execute what's needed to run the server. You can use ~HTTP_PORT~ variable to specify on which port the proxy binds
+- [x] Deliver the project via a public GitHub repository
+
+** Bonus Points:
+
+- [x] Provide ~/status~ page with:
+    - [x] time from start
+    - [x] number of requests processed
+    - Available at: [[https://127.0.0.1:8000/]]
+- [ ] Use asyncronous programming
+- [x] Provide tests covering the functionality
+- [x] Extend Makefile with a test target executing the tests covering the functionality
+
+* How to Run
+
+In order to run the project using *Docker* you must execute the following two commands:
+- ~docker-compose build~
+- ~docker-compose up~
+
+* Test Coverage
+
+Here is the current test coverage that was obtained by running `manage.py test --settings=castproxy.dev_settings`
+
+| Name                                    |     Stmts |    Miss | Cover |
+|-----------------------------------------+-----------+---------+-------|
+| castproxy/__init__.py                   |         0 |       0 |  100% |
+| castproxy/asgi.py                       |         4 |       4 |    0% |
+| castproxy/dev_settings.py               |        21 |       0 |  100% |
+| castproxy/settings.py                   |        21 |      21 |    0% |
+| castproxy/urls.py                       |         5 |       0 |  100% |
+| castproxy/wsgi.py                       |         4 |       4 |    0% |
+| http_proxy/__init__.py                  |         0 |       0 |  100% |
+| http_proxy/admin.py                     |         5 |       0 |  100% |
+| http_proxy/apps.py                      |         3 |       0 |  100% |
+| http_proxy/controller.py                |        10 |       0 |  100% |
+| http_proxy/jwt_composer.py              |        18 |       0 |  100% |
+| http_proxy/migrations/0001_initial.py   |         5 |       0 |  100% |
+| http_proxy/migrations/__init__.py       |         0 |       0 |  100% |
+| http_proxy/models.py                    |        18 |       0 |  100% |
+| http_proxy/request_factory.py           |        29 |       0 |  100% |
+| http_proxy/tests.py                     |        59 |       0 |  100% |
+| http_proxy/views.py                     |        18 |       0 |  100% |
+| main_server/__init__.py                 |         0 |       0 |  100% |
+| main_server/admin.py                    |         5 |       0 |  100% |
+| main_server/apps.py                     |         3 |       0 |  100% |
+| main_server/controller.py               |        16 |       0 |  100% |
+| main_server/migrations/0001_initial.py  |         5 |       0 |  100% |
+| main_server/migrations/__init__.py      |         0 |       0 |  100% |
+| main_server/models.py                   |         8 |       0 |  100% |
+| main_server/tests.py                    |        21 |       0 |  100% |
+| main_server/views.py                    |        11 |       0 |  100% |
+| manage.py                               |        12 |       2 |   83% |
+| TOTAL                                   |       301 |      31 |   90% |
+
+* Project Capabilities
+
+** HTTP Proxy
+
+   The ~/proxy/~ endpoint will accept post requests and create new requests to either a new *destination*,
+   by using the *Destination* header on the original request or sending the POST request to the ~/server/~
+   endpoint.
+
+   For testing purposes, the ~/server/~ endpoint will receive the post request and store the contents of the JWT
+   Token, from the request header, to a DecodedJWT object.
+
+* API Endpoints and System Pages
+
+** Status Page
+
+   Available at ~/~.
+
+   Presents the number of requests and the time since it started.
+
+** Proxy Endpoint
+
+   Available at ~/proxy/~.
+
+   Accepts *POST* requests, and triggers new post request to either a
+   destination set in the original POST request or to a the default destination
+   (the server endpoint).
+
+   Includes the ~x-my-jwt~ header, following the specification above.
+
+*** POST to Different Endpoints
+
+   To alter the destination of the *POST* requests made by the server you just need
+   to add the ~Destination~ header to request that you are making to the ~/proxy/~ endpoint.
+
+   ~{"Destination": <destination endpoint of your choice>}~
+
+** Server Endpoint
+
+   Available at ~/server~.
+
+   Receives *POST* requests and stores the content of the ~x-my-jwt~ header to
+   the DB.

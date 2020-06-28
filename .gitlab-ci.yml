@@ -1,0 +1,35 @@
+image: python:3.6-onbuild
+
+stages:
+  - lint
+  - build
+  - test
+
+lint-python:
+  stage: lint
+  script:
+  - pip3 install flake8
+  - flake8 --config=flake8.conf --exclude=venv/ --exclude=.git/ .
+
+check-migrations:
+  stage: build
+  script:
+    # setup python requirements
+    - pip3 install virtualenv
+    - virtualenv venv  --python=python3
+    - . venv/bin/activate
+    - pip3 install -r requirements.txt --isolated
+    # check migrations
+    - python3 manage.py makemigrations --check --settings=castproxy.dev_settings
+    - python3 manage.py migrate --settings=castproxy.dev_settings
+
+run-unit-tests:
+  stage: test
+  script:
+    # setup python requirements
+    - pip3 install virtualenv
+    - virtualenv venv --python=python3
+    - . venv/bin/activate
+    - pip3 install -r requirements.txt --isolated
+    # run tests
+    - python3 manage.py test --settings=castproxy.dev_settings

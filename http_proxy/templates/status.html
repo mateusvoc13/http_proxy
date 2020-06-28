@@ -1,0 +1,27 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang=en>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <script src="{% static 'js/bootstrap.min.js' %}"></script>
+    <title>{% trans "Proxy Status" %}</title>
+  </head>
+  <body>
+    <div class="container">
+        <div class="jumbotron">
+            <h1 class="display-4">{% trans "Django HTTP Proxy" %}</h1>
+            <p>{% trans "Its main purpose is to redirect POST requests including a unique JWT token on each request" %}</p>
+            <hr class="my-4">
+            <h4>{% trans "Status" %} </h4>
+            <p>{% trans "So far," %} {{ object.request_count }} {% trans "requests were already processed, since "%} {{ object.start_time }} UTC </p>
+            <p>{% trans "Time from start:" %} {{ object.time_from_start }}</p>
+        </div>
+    </div>
+  </body>
+</html>
+
